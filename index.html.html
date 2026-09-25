@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Programme — Prise de Masse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15171B; --surface:#1D2026; --surface2:#252932;
+    --line:#333844; --text:#EDEBE4; --muted:#8B909C;
+    --accent:#C4402F; --accent-dim:#7A2A20; --ok:#4E8B5B;
+    --radius:14px;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="light"]){ }
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+  body{
+    margin:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.num{font-family:'Oswald',system-ui,sans-serif;}
+  .wrap{max-width:560px; margin:0 auto; padding:18px 16px 60px;}
+
+  header{padding:6px 0 16px; border-bottom:1px solid var(--line); margin-bottom:16px;}
+  header .eyebrow{color:var(--accent); font-weight:600; font-size:13px; letter-spacing:.02em;}
+  header h1{font-size:26px; font-weight:700; margin:2px 0 4px; line-height:1.1;}
+  header p{margin:0; color:var(--muted); font-size:13.5px;}
+
+  .stats{display:flex; gap:10px; margin:16px 0;}
+  .stat{flex:1; background:var(--surface); border-radius:var(--radius); padding:12px 14px;}
+  .stat .num{font-size:26px; font-weight:600; color:var(--text);}
+  .stat .lbl{font-size:12px; color:var(--muted); margin-top:2px;}
+
+  .tabs{display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; margin-bottom:18px;}
+  .tab{flex:1; text-align:center; padding:10px 6px; border-radius:10px; background:var(--surface);
+       color:var(--muted); font-weight:600; font-size:13.5px; border:1px solid transparent; cursor:pointer; white-space:nowrap;}
+  .tab.active{background:var(--accent-dim); color:#F4DAD5; border-color:var(--accent);}
+
+  .day-title{font-size:14px; color:var(--muted); margin:0 0 14px; font-weight:500;}
+  .card{background:var(--surface); border-radius:var(--radius); padding:14px 14px 12px; margin-bottom:12px; border:1px solid var(--line);}
+  .card h3{font-size:16.5px; margin:0 0 2px; font-weight:600;}
+  .meta{font-size:12.5px; color:var(--muted); margin-bottom:10px;}
+  .meta b{color:#B7BBC4;}
+  .last{font-size:12px; color:var(--muted); background:var(--surface2); border-radius:8px; padding:6px 9px; margin-bottom:10px;}
+
+  .set-row{display:grid; grid-template-columns:28px 1fr 1fr; gap:8px; align-items:center; margin-bottom:6px;}
+  .set-row .idx{color:var(--muted); font-size:12.5px; font-weight:600; text-align:center;}
+  .set-row input{
+    width:100%; background:var(--surface2); border:1px solid var(--line); color:var(--text);
+    border-radius:9px; padding:9px 8px; font-size:15px; font-family:'Inter',sans-serif; text-align:center;
+  }
+  .set-row input::placeholder{color:#5C616D;}
+  .set-row input:focus{outline:none; border-color:var(--accent);}
+  .set-row input.filled{border-color:var(--ok);}
+  .col-lbl{font-size:10.5px; color:var(--muted); text-align:center; margin-bottom:4px;}
+  .cols-head{display:grid; grid-template-columns:28px 1fr 1fr; gap:8px; margin-bottom:2px;}
+
+  .reset-bar{margin-top:22px;}
+  .btn-reset{
+    width:100%; padding:14px; border-radius:12px; border:1px solid var(--accent);
+    background:transparent; color:var(--accent); font-weight:600; font-size:15px; font-family:'Inter',sans-serif;
+    cursor:pointer;
+  }
+  .btn-reset:active{background:var(--accent-dim); color:#F4DAD5;}
+  .hint{text-align:center; font-size:11.5px; color:var(--muted); margin-top:8px;}
+
+  .toast{
+    position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,20px);
+    background:var(--surface2); color:var(--text); padding:10px 18px; border-radius:30px; font-size:13.5px;
+    border:1px solid var(--line); opacity:0; transition:opacity .25s, transform .25s; pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">UPPER / LOWER — PRISE DE MASSE</div>
+    <h1>Ton programme</h1>
+    <p>Note ton poids et tes répétitions à chaque séance. Progresse dès que tu tiens la fourchette haute sur toutes les séries.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="statVolume">0 kg</div><div class="lbl">Tonnage — semaine en cours</div></div>
+    <div class="stat"><div class="num" id="statSets">0</div><div class="lbl">Séries loguées</div></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="day-title" id="dayTitle"></div>
+  <div id="dayBody"></div>
+
+  <div class="reset-bar">
+    <button class="btn-reset" id="resetBtn">Nouvelle semaine — réinitialiser les charges</button>
+    <div class="hint">Garde tes exercices, efface juste les poids/reps saisis (archivés en référence).</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PROGRAM = [
+  { key:"lundi", label:"Lundi", title:"Upper A — Focus Force & Poussée", exercises:[
+    {name:"Développé couché", mat:"Grande barre + banc", sets:4, reps:"6-8", repos:"2-3 min"},
+    {name:"Tractions pronation", mat:"Barre de traction", sets:4, reps:"Max (6-10)", repos:"2 min"},
+    {name:"Dips", mat:"Barre de dips", sets:3, reps:"8-12", repos:"2 min"},
+    {name:"Rowing buste penché", mat:"Grande barre / haltères", sets:3, reps:"8-10", repos:"1 min 30"},
+    {name:"Développé militaire", mat:"Grande barre / haltères", sets:3, reps:"8-10", repos:"2 min"},
+    {name:"Curl biceps", mat:"Barre EZ", sets:3, reps:"10-12", repos:"1 min 30"},
+  ]},
+  { key:"mardi", label:"Mardi", title:"Lower A — Bas du corps & Sangle abdo", exercises:[
+    {name:"Squat barre arrière", mat:"Grande barre", sets:4, reps:"6-8", repos:"2-3 min"},
+    {name:"Fentes marchées / arrières", mat:"Haltères en mains", sets:3, reps:"10 / jambe", repos:"2 min"},
+    {name:"SDT jambes tendues", mat:"Grande barre / barre EZ", sets:4, reps:"8-10", repos:"2 min"},
+    {name:"Extensions mollets debout", mat:"Haltère + marche", sets:4, reps:"12-15", repos:"1 min 30"},
+    {name:"Relevés de genoux / jambes", mat:"Suspendu à la barre", sets:3, reps:"10-15", repos:"1 min"},
+  ]},
+  { key:"jeudi", label:"Jeudi", title:"Upper B — Focus Volume & Poids du corps", exercises:[
+    {name:"Pompes déclinées", mat:"Pieds sur le banc", sets:4, reps:"10-15", repos:"1 min 30"},
+    {name:"Tractions supination", mat:"Barre de traction", sets:4, reps:"Max (6-10)", repos:"2 min"},
+    {name:"Élévations latérales", mat:"Haltères", sets:4, reps:"12-15", repos:"1 min 30"},
+    {name:"Rowing unilatéral", mat:"1 haltère + banc", sets:3, reps:"10-12 / bras", repos:"1 min 30"},
+    {name:"Barre au front", mat:"Barre EZ sur le banc", sets:3, reps:"10-12", repos:"1 min 30"},
+    {name:"Curl marteau", mat:"Haltères", sets:3, reps:"10-12", repos:"1 min 30"},
+  ]},
+  { key:"vendredi", label:"Vendredi", title:"Lower B — Focus Ischios & Fessiers", exercises:[
+    {name:"Soulevé de terre (SDT)", mat:"Grande barre", sets:4, reps:"6-8", repos:"2-3 min"},
+    {name:"Goblet squat", mat:"1 haltère lourd", sets:3, reps:"10-12", repos:"2 min"},
+    {name:"Hip thrust", mat:"Dos sur le banc + barre", sets:4, reps:"10-12", repos:"2 min"},
+    {name:"Extensions mollets 1 jambe", mat:"Poids du corps + haltère", sets:4, reps:"12-15 / jambe", repos:"1 min 30"},
+    {name:"Gainage planche", mat:"Poids du corps", sets:3, reps:"45-60 sec", repos:"1 min"},
+  ]},
+];
+
+const STORE_KEY = "muscu_current_v1";
+const HIST_KEY = "muscu_history_v1";
+
+function loadJSON(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+
+function emptyState(){
+  const s = {};
+  PROGRAM.forEach(day=>{
+    s[day.key] = day.exercises.map(ex => Array.from({length:ex.sets}, ()=>({w:"",r:""})));
+  });
+  return s;
+}
+
+let current = loadJSON(STORE_KEY, null) || emptyState();
+let history = loadJSON(HIST_KEY, null);
+let activeDay = PROGRAM[0].key;
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = "";
+  PROGRAM.forEach(day=>{
+    const b = document.createElement('div');
+    b.className = 'tab' + (day.key===activeDay ? ' active':'');
+    b.textContent = day.label;
+    b.onclick = ()=>{ activeDay = day.key; renderTabs(); renderDay(); };
+    tabs.appendChild(b);
+  });
+}
+
+function renderDay(){
+  const day = PROGRAM.find(d=>d.key===activeDay);
+  document.getElementById('dayTitle').textContent = day.title;
+  const body = document.getElementById('dayBody');
+  body.innerHTML = "";
+
+  day.exercises.forEach((ex, exIdx)=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const lastData = history && history[day.key] ? history[day.key][exIdx] : null;
+    let lastLine = "";
+    if(lastData && lastData.some(s=>s.w || s.r)){
+      lastLine = lastData.map(s => (s.w||"–") + "kg" + (s.r ? " x"+s.r : "")).join(" · ");
+    }
+
+    card.innerHTML = `
+      <h3>${ex.name}</h3>
+      <div class="meta"><b>${ex.mat}</b> — ${ex.sets} séries × ${ex.reps} · repos ${ex.repos}</div>
+      ${lastLine ? `<div class="last">Semaine dernière : ${lastLine}</div>` : ""}
+      <div class="cols-head"><div></div><div class="col-lbl">Poids (kg)</div><div class="col-lbl">Répétitions</div></div>
+      <div class="rows"></div>
+    `;
+
+    const rows = card.querySelector('.rows');
+    current[day.key][exIdx].forEach((set, sIdx)=>{
+      const row = document.createElement('div');
+      row.className = 'set-row';
+      row.innerHTML = `
+        <div class="idx">${sIdx+1}</div>
+        <input type="number" inputmode="decimal" placeholder="0" value="${set.w}">
+        <input type="number" inputmode="numeric" placeholder="0" value="${set.r}">
+      `;
+      const [wIn, rIn] = row.querySelectorAll('input');
+      const syncClass = ()=>{
+        wIn.classList.toggle('filled', wIn.value !== "");
+        rIn.classList.toggle('filled', rIn.value !== "");
+      };
+      syncClass();
+      wIn.oninput = ()=>{ set.w = wIn.value; syncClass(); persist(); };
+      rIn.oninput = ()=>{ set.r = rIn.value; syncClass(); persist(); };
+      rows.appendChild(row);
+    });
+
+    body.appendChild(card);
+  });
+}
+
+function persist(){
+  saveJSON(STORE_KEY, current);
+  updateStats();
+}
+
+function updateStats(){
+  let vol = 0, sets = 0;
+  Object.values(current).forEach(day=>{
+    day.forEach(ex=>{
+      ex.forEach(s=>{
+        const w = parseFloat(s.w), r = parseFloat(s.r);
+        if(!isNaN(w) && !isNaN(r)){ vol += w*r; sets++; }
+        else if(s.w !== "" || s.r !== ""){ sets++; }
+      });
+    });
+  });
+  document.getElementById('statVolume').textContent = Math.round(vol).toLocaleString('fr-FR') + " kg";
+  document.getElementById('statSets').textContent = sets;
+}
+
+document.getElementById('resetBtn').onclick = ()=>{
+  if(!confirm("Archiver cette semaine et repartir à zéro pour la suivante ?")) return;
+  history = JSON.parse(JSON.stringify(current));
+  saveJSON(HIST_KEY, history);
+  current = emptyState();
+  saveJSON(STORE_KEY, current);
+  renderDay();
+  updateStats();
+  toast("Nouvelle semaine prête 💪");
+};
+
+renderTabs();
+renderDay();
+updateStats();
+</script>
+</body>
+</html>
